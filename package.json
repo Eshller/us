@@ -1,0 +1,31 @@
+{
+  "name": "us",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "import:whatsapp": "tsx scripts/import-whatsapp-export.ts",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "test": "tsx --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "@tanstack/react-virtual": "^3.14.5",
+    "adm-zip": "^0.5.18",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.8",
+    "@types/node": "^24.13.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "oxlint": "^1.71.0",
+    "tsx": "^4.23.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.1.1"
+  }
+}
