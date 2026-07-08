@@ -1222,15 +1222,19 @@
   .message-bubble.text-bubble p::after {
     content: '';
     display: inline-block;
-    width: 58px;
+    width: 66px;
+  }
+
+  .message-row.own .message-bubble.text-bubble p::after {
+    width: 90px;
   }
 
   .message-bubble.text-bubble.edited-bubble p::after {
-    width: 98px;
+    width: 104px;
   }
 
   .message-row.own .message-bubble.text-bubble.edited-bubble p::after {
-    width: 118px;
+    width: 132px;
   }
 
   .message-bubble time {
