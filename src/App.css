@@ -175,6 +175,11 @@
   box-shadow: 0 0 0 2px rgba(18, 140, 126, 0.26);
 }
 
+.wa-search-field input:disabled {
+  color: #667781;
+  opacity: 1;
+}
+
 .wa-search-count {
   min-width: 3.8rem;
   color: #54656f;

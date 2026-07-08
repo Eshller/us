@@ -53,3 +53,11 @@ export interface MemoryData {
   recap: RecapData
   mediaManifest: MediaManifestItem[]
 }
+
+export interface MemoryDataLoadSnapshot {
+  data: MemoryData
+  complete: boolean
+  loadedRows: number
+  totalRows: number
+  loadError?: string
+}

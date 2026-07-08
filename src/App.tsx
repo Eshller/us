@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { ChatArchive } from './components/chat/ChatArchive'
 import { RecapStory } from './components/recap/RecapStory'
-import { loadMemoryData } from './lib/memory/loadMemoryData'
+import { subscribeMemoryDataProgressively } from './lib/memory/loadMemoryData'
 import type { MemoryData } from './lib/memory/types'
 import './App.css'
 
@@ -9,6 +9,12 @@ type Tab = 'chat' | 'recap' | 'privacy'
 
 function App() {
   const [memoryData, setMemoryData] = useState<MemoryData | null>(null)
+  const [archiveLoad, setArchiveLoad] = useState({
+    complete: false,
+    loadedRows: 0,
+    totalRows: 0,
+    loadError: undefined as string | undefined,
+  })
   const [activeTab, setActiveTab] = useState<Tab>('chat')
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null)
   const viewerSender = useMemo(
@@ -29,7 +35,15 @@ function App() {
   }, [memoryData])
 
   useEffect(() => {
-    loadMemoryData().then(setMemoryData)
+    return subscribeMemoryDataProgressively((snapshot) => {
+      setMemoryData(snapshot.data)
+      setArchiveLoad({
+        complete: snapshot.complete,
+        loadedRows: snapshot.loadedRows,
+        totalRows: snapshot.totalRows,
+        loadError: snapshot.loadError,
+      })
+    })
   }, [])
 
   const openMessage = (messageId: string) => {
@@ -87,6 +101,10 @@ function App() {
             mediaManifest={memoryData.mediaManifest}
             selectedMessageId={selectedMessageId}
             viewerSender={viewerSender}
+            isArchiveComplete={archiveLoad.complete}
+            loadedRows={archiveLoad.loadedRows}
+            totalRows={archiveLoad.totalRows}
+            loadError={archiveLoad.loadError}
             onOpenRecap={() => setActiveTab('recap')}
             onOpenPrivacy={() => setActiveTab('privacy')}
           />

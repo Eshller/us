@@ -8,14 +8,16 @@ import {
   isSafePreviewMedia,
   parseWhatsAppExportText,
 } from '../src/lib/whatsapp/parseExport.ts'
-import type { MediaManifestItem } from '../src/lib/memory/types.ts'
+import type { MediaManifestItem, MemoryMessage } from '../src/lib/memory/types.ts'
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const outDir = path.join(rootDir, 'public', 'memory-data')
 const mediaDir = path.join(outDir, 'media')
+const messageChunksDir = path.join(outDir, 'message-chunks')
 const maxEntryCount = 2_500
 const maxSingleFileBytes = 150 * 1024 * 1024
 const maxTotalMediaBytes = 1.5 * 1024 * 1024 * 1024
+const messageChunkSize = 5_000
 
 async function main() {
   const inputPath = process.argv[2]
@@ -27,6 +29,7 @@ async function main() {
 
   await rm(outDir, { force: true, recursive: true })
   await mkdir(mediaDir, { recursive: true })
+  await mkdir(messageChunksDir, { recursive: true })
 
   const input = path.resolve(process.cwd(), inputPath)
   const imported = input.toLowerCase().endsWith('.zip')
@@ -35,17 +38,54 @@ async function main() {
 
   const messages = parseWhatsAppExportText(imported.chatText, { dateOrder })
   const recap = buildRecap(messages)
+  const messageChunkManifest = await writeMessageChunks(messages, recap.messageCount)
   const realMessageCount = messages.filter(
     (message) => message.sender && message.type !== 'system',
   ).length
 
-  await writeJson(path.join(outDir, 'messages.json'), messages)
+  await writeJson(path.join(outDir, 'message-chunks.json'), messageChunkManifest)
   await writeJson(path.join(outDir, 'recap.json'), recap)
   await writeJson(path.join(outDir, 'media-manifest.json'), imported.mediaManifest)
 
   console.log(
     `Imported ${realMessageCount} sender-attributed messages (${messages.length} rendered rows) into ${path.relative(rootDir, outDir)}`,
   )
+}
+
+async function writeMessageChunks(messages: MemoryMessage[], messageCount: number) {
+  const chunks: Array<{
+    path: string
+    count: number
+    start: string | null
+    end: string | null
+  }> = []
+
+  for (let startIndex = 0; startIndex < messages.length; startIndex += messageChunkSize) {
+    const chunk = messages.slice(startIndex, startIndex + messageChunkSize)
+    const chunkIndex = chunks.length
+    const filename = `messages-${chunkIndex.toString().padStart(4, '0')}.json`
+    const first = chunk[0]
+    const last = chunk.at(-1)
+
+    await writeJson(path.join(messageChunksDir, filename), chunk)
+    chunks.push({
+      path: `/memory-data/message-chunks/${filename}`,
+      count: chunk.length,
+      start: timestampFor(first),
+      end: timestampFor(last),
+    })
+  }
+
+  return {
+    chunkSize: messageChunkSize,
+    renderedRowCount: messages.length,
+    messageCount,
+    chunks,
+  }
+}
+
+function timestampFor(message: MemoryMessage | undefined): string | null {
+  return message?.timestamp ?? null
 }
 
 async function importZip(zipPath: string): Promise<{

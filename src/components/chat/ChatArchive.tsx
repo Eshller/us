@@ -9,6 +9,10 @@ interface ChatArchiveProps {
   mediaManifest: MediaManifestItem[]
   selectedMessageId: string | null
   viewerSender: string | null
+  isArchiveComplete: boolean
+  loadedRows: number
+  totalRows: number
+  loadError?: string
   onOpenRecap: () => void
   onOpenPrivacy: () => void
 }
@@ -22,6 +26,10 @@ export function ChatArchive({
   mediaManifest,
   selectedMessageId,
   viewerSender,
+  isArchiveComplete,
+  loadedRows,
+  totalRows,
+  loadError,
   onOpenRecap,
   onOpenPrivacy,
 }: ChatArchiveProps) {
@@ -56,6 +64,11 @@ export function ChatArchive({
     () => messages.filter((message) => message.sender && message.type !== 'system').length,
     [messages],
   )
+  const archiveStatus = loadError
+    ? 'Archive load incomplete; search unavailable'
+    : isArchiveComplete
+      ? `${realMessageCount.toLocaleString()} messages in this archive`
+      : `Loading full archive... ${loadedRows.toLocaleString()}/${totalRows.toLocaleString()} rows`
   const visibleMessages = useMemo(() => {
     return messages.filter((message) => {
       if (sender !== 'all' && message.sender !== sender) return false
@@ -66,10 +79,10 @@ export function ChatArchive({
   }, [date, mediaOnly, messages, sender])
   const searchMatches = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
-    if (!normalizedQuery) return []
+    if (!normalizedQuery || !isArchiveComplete) return []
 
     return visibleMessages.filter((message) => messageMatchesQuery(message, normalizedQuery))
-  }, [query, visibleMessages])
+  }, [isArchiveComplete, query, visibleMessages])
   const searchMatchIds = useMemo(
     () => new Set(searchMatches.map((message) => message.id)),
     [searchMatches],
@@ -177,6 +190,14 @@ export function ChatArchive({
     }
   }, [rows.length, scrollToLatest, selectedMessageId])
 
+  useLayoutEffect(() => {
+    if (!isArchiveComplete || !rows.length || selectedMessageId) return
+
+    scrollToLatest()
+    const frame = window.requestAnimationFrame(scrollToLatest)
+    return () => window.cancelAnimationFrame(frame)
+  }, [isArchiveComplete, rows.length, scrollToLatest, selectedMessageId])
+
   useEffect(() => {
     if (!activeMatch) return
 
@@ -219,9 +240,16 @@ export function ChatArchive({
               <span className="sr-only">Search this chat</span>
               <input
                 autoFocus
+                disabled={!isArchiveComplete}
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search..."
+                placeholder={
+                  isArchiveComplete
+                    ? 'Search...'
+                    : loadError
+                      ? 'Full archive unavailable'
+                      : 'Loading full archive...'
+                }
               />
             </label>
             <div className="wa-search-count" aria-live="polite">
@@ -236,7 +264,7 @@ export function ChatArchive({
                 type="button"
                 aria-label="Previous search result"
                 onClick={goToPreviousMatch}
-                disabled={!searchMatches.length || activeMatchIndex === 0}
+                disabled={!isArchiveComplete || !searchMatches.length || activeMatchIndex === 0}
               >
                 <WhatsappIcon name="chevronUp" />
               </button>
@@ -244,7 +272,11 @@ export function ChatArchive({
                 type="button"
                 aria-label="Next search result"
                 onClick={goToNextMatch}
-                disabled={!searchMatches.length || activeMatchIndex === searchMatches.length - 1}
+                disabled={
+                  !isArchiveComplete ||
+                  !searchMatches.length ||
+                  activeMatchIndex === searchMatches.length - 1
+                }
               >
                 <WhatsappIcon name="chevronDown" />
               </button>
@@ -266,9 +298,7 @@ export function ChatArchive({
               </span>
               <span className="chat-contact-copy">
                 <span className="chat-contact-name">{contactSender ?? 'Chat'}</span>
-                <span className="chat-contact-subtitle">
-                  {realMessageCount.toLocaleString()} messages in this archive
-                </span>
+                <span className="chat-contact-subtitle">{archiveStatus}</span>
               </span>
             </button>
             <div className="wa-actions">
@@ -342,7 +372,7 @@ export function ChatArchive({
 
       {isSearchOpen && query.trim() && !searchMatches.length ? (
         <div className="search-empty" role="status">
-          No messages found
+          {isArchiveComplete ? 'No messages found' : (loadError ?? 'Loading full archive before searching')}
         </div>
       ) : null}
 
@@ -401,7 +431,10 @@ export function ChatArchive({
       ) : null}
 
       <footer className="chat-footer">
-        <span>{visibleMessages.length.toLocaleString()} shown</span>
+        <span>
+          {visibleMessages.length.toLocaleString()} shown
+          {isArchiveComplete ? '' : ' from latest messages'}
+        </span>
         <span>Local archive, no upload required</span>
       </footer>
       <div className="chat-composer" aria-hidden="true">
