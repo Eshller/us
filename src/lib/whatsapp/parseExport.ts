@@ -70,6 +70,10 @@ export function parseWhatsAppExportText(
     const { sender, body } = parseSenderAndBody(prefix.rest)
     const editedState = extractEditedState(body)
     const attachment = extractAttachmentRef(editedState.text)
+    if (!attachment && ((sender && !editedState.text) || (!sender && isBlankSenderRow(editedState.text)))) {
+      continue
+    }
+
     const mediaRef = attachment?.safePreview ? attachment.filename : null
     const { timestamp, dateKey } = parseDateTime(prefix.date, prefix.time, options)
     const type = classifyMessage(editedState.text, mediaRef, sender, attachment)
@@ -253,6 +257,10 @@ function isSystemNotice(normalizedBody: string): boolean {
     normalizedBody.endsWith(' is a contact.') ||
     normalizedBody.includes('security code changed')
   )
+}
+
+function isBlankSenderRow(text: string): boolean {
+  return /^[^:]+:$/.test(text.trim())
 }
 
 function extensionFor(filename: string): string {

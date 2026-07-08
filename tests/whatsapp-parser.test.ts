@@ -85,6 +85,15 @@ test('classifies iOS-exported WhatsApp notices as system rows', () => {
   assert.equal(messages[1]?.text, 'Riti🦋 is a contact.')
 })
 
+test('skips blank exported sender rows', () => {
+  const messages = parseWhatsAppExportText(`[27/11/24, 6:03:04 PM] Eshller:
+[27/11/24, 6:04:04 PM] Eshller: real message`)
+
+  assert.equal(messages.length, 1)
+  assert.equal(messages[0]?.sender, 'Eshller')
+  assert.equal(messages[0]?.text, 'real message')
+})
+
 test('extracts edited marker instead of rendering it as message text', () => {
   const messages = parseWhatsAppExportText('26/09/24, 4:49 PM - Riti🦋: Hi ‎<This message was edited>')
 

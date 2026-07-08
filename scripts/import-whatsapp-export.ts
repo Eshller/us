@@ -35,12 +35,17 @@ async function main() {
 
   const messages = parseWhatsAppExportText(imported.chatText, { dateOrder })
   const recap = buildRecap(messages)
+  const realMessageCount = messages.filter(
+    (message) => message.sender && message.type !== 'system',
+  ).length
 
   await writeJson(path.join(outDir, 'messages.json'), messages)
   await writeJson(path.join(outDir, 'recap.json'), recap)
   await writeJson(path.join(outDir, 'media-manifest.json'), imported.mediaManifest)
 
-  console.log(`Imported ${messages.length} messages into ${path.relative(rootDir, outDir)}`)
+  console.log(
+    `Imported ${realMessageCount} sender-attributed messages (${messages.length} rendered rows) into ${path.relative(rootDir, outDir)}`,
+  )
 }
 
 async function importZip(zipPath: string): Promise<{

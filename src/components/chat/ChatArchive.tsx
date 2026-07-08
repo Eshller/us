@@ -52,6 +52,10 @@ export function ChatArchive({
       : participants.find((participant) => /riti/i.test(participant)) ?? participants[0] ?? null
   const contactSender = participants.find((participant) => participant !== ownSender) ?? participants[0]
   const isOneToOne = participants.length <= 2
+  const realMessageCount = useMemo(
+    () => messages.filter((message) => message.sender && message.type !== 'system').length,
+    [messages],
+  )
   const visibleMessages = useMemo(() => {
     return messages.filter((message) => {
       if (sender !== 'all' && message.sender !== sender) return false
@@ -263,7 +267,7 @@ export function ChatArchive({
               <span className="chat-contact-copy">
                 <span className="chat-contact-name">{contactSender ?? 'Chat'}</span>
                 <span className="chat-contact-subtitle">
-                  {messages.length.toLocaleString()} messages in this archive
+                  {realMessageCount.toLocaleString()} messages in this archive
                 </span>
               </span>
             </button>
