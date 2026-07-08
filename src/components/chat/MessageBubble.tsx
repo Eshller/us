@@ -27,6 +27,8 @@ export function MessageBubble({
     )
   }
 
+  const isTextBubble = message.type === 'text' || message.type === 'deleted'
+
   return (
     <article
       className={`message-row ${isOwn ? 'own' : 'theirs'} ${isSearchMatch ? 'search-match' : ''} ${
@@ -34,7 +36,11 @@ export function MessageBubble({
       }`}
       id={message.id}
     >
-      <div className={`message-bubble ${message.type === 'call' ? 'call-bubble' : ''}`}>
+      <div
+        className={`message-bubble ${message.type === 'call' ? 'call-bubble' : ''} ${
+          isTextBubble ? 'text-bubble' : ''
+        } ${message.edited ? 'edited-bubble' : ''}`}
+      >
         {showSenderName ? <div className="message-sender">{message.sender}</div> : null}
         {media ? <MediaPreview media={media} altText={message.text} /> : null}
         {message.mediaRef && !media ? (
