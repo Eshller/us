@@ -28,6 +28,8 @@ export function MessageBubble({
   }
 
   const isTextBubble = message.type === 'text' || message.type === 'deleted'
+  const isAttachment = isAttachmentMessage(message)
+  const displayText = displayTextForMessage(message)
 
   return (
     <article
@@ -39,18 +41,13 @@ export function MessageBubble({
       <div
         className={`message-bubble ${message.type === 'call' ? 'call-bubble' : ''} ${
           isTextBubble ? 'text-bubble' : ''
-        } ${message.edited ? 'edited-bubble' : ''}`}
+        } ${isAttachment ? 'attachment-bubble' : ''} ${message.edited ? 'edited-bubble' : ''}`}
       >
         {showSenderName ? <div className="message-sender">{message.sender}</div> : null}
         {media ? <MediaPreview media={media} altText={message.text} /> : null}
-        {message.mediaRef && !media ? (
-          <div className="missing-media">
-            <span>{message.mediaRef}</span>
-            <small>Media reference from the export</small>
-          </div>
-        ) : null}
+        {!media && isAttachment ? <AttachmentPlaceholder message={message} /> : null}
         {message.type === 'call' ? <CallPreview text={message.text} /> : null}
-        {message.text && message.type !== 'call' ? <p>{message.text}</p> : null}
+        {displayText ? <p>{displayText}</p> : null}
         <time>
           {message.edited ? <span className="edited-label">edited</span> : null}
           {formatMessageTime(message.timestamp)}
@@ -62,6 +59,38 @@ export function MessageBubble({
         </time>
       </div>
     </article>
+  )
+}
+
+function AttachmentPlaceholder({ message }: { message: MemoryMessage }) {
+  if (message.type === 'document') {
+    return (
+      <div className="attachment-card document-card unavailable">
+        <span className="attachment-icon document-icon" aria-hidden="true">
+          <WhatsappIcon name="file" />
+        </span>
+        <span className="attachment-copy">
+          <strong>Document unavailable</strong>
+          <small>Skipped from this keepsake for privacy</small>
+        </span>
+      </div>
+    )
+  }
+
+  const { title, detail, iconName } = attachmentMetaFor(message)
+
+  return (
+    <div className={`media-placeholder ${message.type}`}>
+      <div className="media-placeholder-visual" aria-hidden="true">
+        <span className="media-placeholder-icon">
+          <WhatsappIcon name={iconName} />
+        </span>
+      </div>
+      <div className="media-placeholder-copy">
+        <strong>{title}</strong>
+        <small>{detail}</small>
+      </div>
+    </div>
   )
 }
 
@@ -97,8 +126,14 @@ function MediaPreview({ media, altText }: { media: MediaManifestItem; altText: s
   }
 
   return (
-    <a className="document-preview" href={media.path} download={media.filename}>
-      Download {media.filename}
+    <a className="attachment-card document-card" href={media.path} download={media.filename}>
+      <span className="attachment-icon document-icon" aria-hidden="true">
+        <WhatsappIcon name="file" />
+      </span>
+      <span className="attachment-copy">
+        <strong>{media.filename}</strong>
+        <small>Tap to download</small>
+      </span>
     </a>
   )
 }
@@ -112,4 +147,62 @@ function formatMessageTime(timestamp: string): string {
 
 function cleanDisplayText(text: string): string {
   return text.replace(/[\u200e\u200f\u202a-\u202e]/g, '').replace(/\s+/g, ' ').trim()
+}
+
+function isAttachmentMessage(message: MemoryMessage): boolean {
+  return ['image', 'video', 'audio', 'document', 'sticker'].includes(message.type)
+}
+
+function displayTextForMessage(message: MemoryMessage): string {
+  if (!message.text || message.type === 'call') return ''
+  if (!isAttachmentMessage(message)) return message.text
+
+  const documentSentinel = 'Document attachment skipped for privacy.'
+  if (message.text === documentSentinel) return ''
+  if (message.text.startsWith(`${documentSentinel}\n`)) {
+    return message.text.slice(documentSentinel.length).trim()
+  }
+
+  const [firstLine = '', ...captionLines] = message.text.split('\n')
+  if (message.mediaRef && cleanDisplayText(firstLine) === message.mediaRef) {
+    return captionLines.join('\n').trim()
+  }
+
+  return message.text
+}
+
+function attachmentMetaFor(message: MemoryMessage): {
+  title: string
+  detail: string
+  iconName: 'camera' | 'image' | 'mic' | 'video'
+} {
+  if (message.type === 'video') {
+    return {
+      title: 'Video unavailable',
+      detail: message.mediaRef ?? 'Media referenced in the export',
+      iconName: 'video',
+    }
+  }
+
+  if (message.type === 'audio') {
+    return {
+      title: 'Voice note unavailable',
+      detail: message.mediaRef ?? 'Audio referenced in the export',
+      iconName: 'mic',
+    }
+  }
+
+  if (message.type === 'sticker') {
+    return {
+      title: 'Sticker unavailable',
+      detail: message.mediaRef ?? 'Sticker referenced in the export',
+      iconName: 'image',
+    }
+  }
+
+  return {
+    title: 'Photo unavailable',
+    detail: message.mediaRef ?? 'Image referenced in the export',
+    iconName: 'camera',
+  }
 }

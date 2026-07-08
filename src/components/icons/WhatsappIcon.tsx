@@ -6,6 +6,8 @@ interface WhatsappIconProps {
     | 'chevronDown'
     | 'chevronUp'
     | 'checks'
+    | 'file'
+    | 'image'
     | 'emoji'
     | 'lock'
     | 'mic'
@@ -95,6 +97,36 @@ const paths = {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </>
+  ),
+  file: (
+    <>
+      <path
+        d="M7.5 3.8h6.1L18 8.2v11.1a1.7 1.7 0 0 1-1.7 1.7H7.5a1.7 1.7 0 0 1-1.7-1.7V5.5a1.7 1.7 0 0 1 1.7-1.7Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path d="M13.5 4v4.5H18" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M8.7 13h6.6M8.7 16h4.8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </>
+  ),
+  image: (
+    <>
+      <path
+        d="M5.2 5.5h13.6A1.8 1.8 0 0 1 20.6 7.3v9.4a1.8 1.8 0 0 1-1.8 1.8H5.2a1.8 1.8 0 0 1-1.8-1.8V7.3a1.8 1.8 0 0 1 1.8-1.8Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="m4.2 16.4 4.2-4 3 2.7 2.4-2.5 5.8 5.4"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="15.9" cy="9.2" r="1.3" fill="currentColor" />
     </>
   ),
   emoji: (

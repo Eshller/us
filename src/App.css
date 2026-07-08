@@ -616,20 +616,125 @@
   margin-bottom: 8px;
 }
 
-.document-preview,
-.missing-media {
+.attachment-card {
   display: grid;
-  gap: 4px;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-width: min(19rem, 68vw);
   margin-bottom: 8px;
-  padding: 12px;
+  padding: 10px;
   border-radius: 14px;
-  background: rgba(7, 94, 84, 0.08);
-  color: var(--green);
+  background: rgba(7, 94, 84, 0.07);
+  color: inherit;
   text-decoration: none;
 }
 
-.missing-media small {
+.attachment-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(7, 94, 84, 0.1);
+  color: var(--green);
+}
+
+.document-card.unavailable .attachment-icon {
+  color: #8696a0;
+}
+
+.attachment-icon .wa-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.attachment-copy {
+  min-width: 0;
+}
+
+.attachment-copy strong,
+.attachment-copy small,
+.media-placeholder-copy strong,
+.media-placeholder-copy small {
+  display: block;
+}
+
+.attachment-copy strong,
+.media-placeholder-copy strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-copy small,
+.media-placeholder-copy small {
+  overflow: hidden;
   color: var(--muted);
+  font-size: 0.76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.media-placeholder {
+  overflow: hidden;
+  width: min(17rem, 68vw);
+  margin-bottom: 8px;
+  border-radius: 12px;
+  background: rgba(17, 27, 33, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(17, 27, 33, 0.04);
+}
+
+.media-placeholder-visual {
+  display: grid;
+  place-items: center;
+  height: 9.5rem;
+  background:
+    radial-gradient(circle at 24% 20%, rgba(255, 255, 255, 0.7), transparent 4.5rem),
+    linear-gradient(135deg, rgba(134, 150, 160, 0.24), rgba(84, 101, 111, 0.34));
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.media-placeholder.video .media-placeholder-visual {
+  background:
+    radial-gradient(circle at 70% 24%, rgba(255, 255, 255, 0.5), transparent 5rem),
+    linear-gradient(135deg, rgba(18, 140, 126, 0.38), rgba(17, 27, 33, 0.5));
+}
+
+.media-placeholder.audio .media-placeholder-visual {
+  height: 4.6rem;
+  background:
+    linear-gradient(90deg, rgba(18, 140, 126, 0.16) 0 10%, transparent 10% 14%) 0 50% / 22px 34px repeat-x,
+    rgba(17, 27, 33, 0.04);
+  color: var(--green);
+}
+
+.media-placeholder-icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(6px);
+}
+
+.media-placeholder.audio .media-placeholder-icon {
+  width: 42px;
+  height: 42px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.media-placeholder-icon .wa-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.media-placeholder-copy {
+  padding: 9px 10px 10px;
 }
 
 .chat-footer {
@@ -1181,12 +1286,70 @@
     font-size: 0.74rem;
   }
 
-  .missing-media,
-  .document-preview {
+  .attachment-card {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 9px;
+    min-width: min(17rem, 74vw);
+    margin-bottom: 6px;
     border-radius: 8px;
     background: rgba(17, 27, 33, 0.06);
+    padding: 8px;
+  }
+
+  .attachment-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+  }
+
+  .attachment-icon .wa-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .attachment-copy strong,
+  .media-placeholder-copy strong {
+    color: #111b21;
     font-size: 0.82rem;
-    padding: 9px;
+  }
+
+  .attachment-copy small,
+  .media-placeholder-copy small {
+    color: #667781;
+    font-size: 0.7rem;
+  }
+
+  .media-placeholder {
+    width: min(16.5rem, 74vw);
+    margin-bottom: 6px;
+    border-radius: 8px;
+  }
+
+  .media-placeholder-visual {
+    height: 8.4rem;
+  }
+
+  .media-placeholder.audio .media-placeholder-visual {
+    height: 4.2rem;
+  }
+
+  .media-placeholder-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .media-placeholder.audio .media-placeholder-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .media-placeholder-icon .wa-icon {
+    width: 25px;
+    height: 25px;
+  }
+
+  .media-placeholder-copy {
+    padding: 8px 9px 9px;
   }
 
   .chat-footer {
