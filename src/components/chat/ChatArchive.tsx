@@ -43,6 +43,7 @@ export function ChatArchive({
   const [sender, setSender] = useState('all')
   const [date, setDate] = useState('')
   const [mediaOnly, setMediaOnly] = useState(false)
+  const [failedAvatarSrc, setFailedAvatarSrc] = useState<string | null>(null)
   const parentRef = useRef<HTMLDivElement>(null)
   const didInitialScrollRef = useRef(false)
   const scrollDateTimeoutRef = useRef<number | null>(null)
@@ -59,6 +60,9 @@ export function ChatArchive({
       ? viewerSender
       : participants.find((participant) => /riti/i.test(participant)) ?? participants[0] ?? null
   const contactSender = participants.find((participant) => participant !== ownSender) ?? participants[0]
+  const contactAvatarSrc = avatarFor(contactSender)
+  const contactAvatarImageSrc =
+    contactAvatarSrc && failedAvatarSrc !== contactAvatarSrc ? contactAvatarSrc : null
   const isOneToOne = participants.length <= 2
   const realMessageCount = useMemo(
     () => messages.filter((message) => message.sender && message.type !== 'system').length,
@@ -294,7 +298,15 @@ export function ChatArchive({
               onClick={onOpenRecap}
             >
               <span className="chat-avatar" aria-hidden="true">
-                <span>{initialFor(contactSender)}</span>
+                {contactAvatarImageSrc ? (
+                  <img
+                    src={contactAvatarImageSrc}
+                    alt=""
+                    onError={() => setFailedAvatarSrc(contactAvatarImageSrc)}
+                  />
+                ) : (
+                  <span>{initialFor(contactSender)}</span>
+                )}
               </span>
               <span className="chat-contact-copy">
                 <span className="chat-contact-name">{contactSender ?? 'Chat'}</span>
@@ -495,6 +507,10 @@ function messageMatchesQuery(message: MemoryMessage, normalizedQuery: string): b
 
 function initialFor(name?: string): string {
   return name?.trim().slice(0, 1).toUpperCase() || '?'
+}
+
+function avatarFor(name?: string): string | null {
+  return name && /eshller/i.test(name) ? '/profiles/eshller.png' : null
 }
 
 function formatDate(dateKey: string): string {
