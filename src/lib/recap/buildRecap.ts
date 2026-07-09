@@ -64,7 +64,7 @@ export function buildRecap(messages: MemoryMessage[]): RecapData {
     cards.push({
       id: 'first-message',
       eyebrow: 'First page',
-      title: 'Where this archive begins',
+      title: 'Where our chat begins',
       body: quote(firstMessage.text),
       messageId: firstMessage.id,
     })
@@ -72,20 +72,20 @@ export function buildRecap(messages: MemoryMessage[]): RecapData {
 
   cards.push({
     id: 'source-of-truth',
-    eyebrow: 'Data audit',
-    title: `${sorted.length.toLocaleString()} rows`,
-    body: `This recap is generated from the root WhatsApp export currently in the project. It found ${activeDays.toLocaleString()} active days across ${totalDays.toLocaleString()} calendar days.`,
-    metric: `${totalWords.toLocaleString()} words`,
+    eyebrow: 'Our little universe',
+    title: `${sorted.length.toLocaleString()} little moments`,
+    body: `Across ${activeDays.toLocaleString()} days, this became our tiny place for hellos, laughter, missing each other, and coming back. It stretches across ${totalDays.toLocaleString()} calendar days, but somehow still feels like one long conversation.`,
+    metric: `${totalWords.toLocaleString()} words, all ours`,
   })
 
   if (bySender.length >= 2) {
     cards.push({
       id: 'sender-balance',
-      eyebrow: 'Head to head',
-      title: 'Almost perfectly balanced',
-      body: `${bySender[0].sender} has ${bySender[0].count.toLocaleString()} rows; ${bySender[1].sender} has ${bySender[1].count.toLocaleString()}. The difference is only ${Math.abs(
+      eyebrow: 'Both of us',
+      title: 'We both kept showing up',
+      body: `${bySender[0].sender} left ${bySender[0].count.toLocaleString()} little traces here, and ${bySender[1].sender} left ${bySender[1].count.toLocaleString()}. The difference is only ${Math.abs(
         bySender[0].count - bySender[1].count,
-      ).toLocaleString()} rows.`,
+      ).toLocaleString()} messages, which feels very us.`,
     })
   }
 
@@ -115,8 +115,8 @@ export function buildRecap(messages: MemoryMessage[]): RecapData {
       id: 'busiest-weekday',
       eyebrow: 'Weekly rhythm',
       title: `${busiestWeekday.key}s are loudest`,
-      body: `The archive has ${busiestWeekday.count.toLocaleString()} rows on ${busiestWeekday.key}s. Friday is the quietest day in the current export.`,
-      metric: `${busiestWeekday.count.toLocaleString()} rows`,
+      body: `${busiestWeekday.key}s somehow held the most of us: quick updates, random thoughts, and tiny reasons to smile at the phone.`,
+      metric: `${busiestWeekday.count.toLocaleString()} messages`,
     })
   }
 
@@ -125,7 +125,7 @@ export function buildRecap(messages: MemoryMessage[]): RecapData {
       id: 'longest-streak',
       eyebrow: 'Longest streak',
       title: `${streak.days} days in a row`,
-      body: `${formatDayLabel(streak.start)} to ${formatDayLabel(streak.end)} stayed connected in the archive.`,
+      body: `From ${formatDayLabel(streak.start)} to ${formatDayLabel(streak.end)}, we kept finding our way back to each other.`,
       metric: `${streak.days} days`,
       messageId: streak.firstMessageId,
     })
@@ -146,7 +146,7 @@ export function buildRecap(messages: MemoryMessage[]): RecapData {
       id: 'shared-words',
       eyebrow: 'Recurring words',
       title: words.map((item) => item.value).join(', '),
-      body: 'Not a diagnosis, just the words that kept returning.',
+      body: 'The tiny everyday words that somehow became part of our language.',
     })
   }
 
@@ -155,9 +155,9 @@ export function buildRecap(messages: MemoryMessage[]): RecapData {
     cards.push({
       id: 'late-night',
       eyebrow: 'After midnight',
-      title: 'Structurally nocturnal',
-      body: `Between midnight and 4 AM, the export has ${lateNightCount.toLocaleString()} rows. This is not a random late night; it is a pattern.`,
-      metric: `${percentage}% of the archive`,
+      title: 'Our secret hour',
+      body: `Between midnight and 4 AM, there are ${lateNightCount.toLocaleString()} sleepy little messages: half-awake thoughts, softness, and the kind of talking that belongs only to us.`,
+      metric: `${percentage}% of our story`,
     })
   }
 
@@ -166,8 +166,8 @@ export function buildRecap(messages: MemoryMessage[]): RecapData {
       id: 'busiest-hour',
       eyebrow: 'Peak hour',
       title: `${formatHourLabel(Number(busiestHour.key))}`,
-      body: 'The single loudest hour of the day in this export.',
-      metric: `${busiestHour.count.toLocaleString()} rows`,
+      body: 'The hour our phones most often found each other.',
+      metric: `${busiestHour.count.toLocaleString()} messages`,
     })
   }
 
@@ -198,7 +198,7 @@ export function buildRecap(messages: MemoryMessage[]): RecapData {
       id: 'first-media',
       eyebrow: 'First saved media',
       title: firstMedia.mediaRef ?? 'A media memory',
-      body: 'A moment from the archive that can be opened in context.',
+      body: 'A little saved piece of us that can still take you back there.',
       messageId: firstMedia.id,
     })
   }
