@@ -186,13 +186,17 @@ const paths = {
     />
   ),
   phone: (
-    <path
-      d="M7.2 4.8 9.5 4a1.4 1.4 0 0 1 1.6.7l1 2a1.4 1.4 0 0 1-.3 1.6L10.7 9.4a10.7 10.7 0 0 0 3.9 3.9l1.1-1.1a1.4 1.4 0 0 1 1.6-.3l2 1a1.4 1.4 0 0 1 .7 1.6l-.8 2.3a2.2 2.2 0 0 1-2.2 1.5A13.3 13.3 0 0 1 5.7 7a2.2 2.2 0 0 1 1.5-2.2Z"
-      stroke="currentColor"
-      strokeWidth="1.9"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
+    <>
+      <path d="M16 2v6h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="m22 2-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </>
   ),
   plus: (
     <path
