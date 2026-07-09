@@ -178,3 +178,19 @@ test('recap buckets use local date keys rather than UTC slices', () => {
   assert.equal(busiestDay?.title.includes('2 Jan'), true)
   assert.equal(busiestDay?.metric, '2 messages')
 })
+
+test('recap copy keeps the romantic keepsake tone', () => {
+  const messages = parseWhatsAppExportText(`01/01/24, 23:58 - You: Hi
+02/01/24, 00:02 - Her: goodnight hehe
+02/01/24, 00:03 - You: love you
+03/01/24, 10:10 - Her: good morning`)
+  const recap = buildRecap(messages)
+  const visibleCopy = recap.cards
+    .flatMap((card) => [card.eyebrow, card.title, card.body, card.metric ?? ''])
+    .join('\n')
+
+  assert.doesNotMatch(
+    visibleCopy,
+    /\b(data audit|root whatsapp|current export|rows|diagnosis|the archive|this archive|from the archive|% of the archive|report)\b/i,
+  )
+})
