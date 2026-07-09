@@ -92,14 +92,32 @@ export function ChatArchive({
     [searchMatches],
   )
   const rows = useMemo(() => buildRows(visibleMessages), [visibleMessages])
+  const estimatedRows = useMemo(
+    () =>
+      rows.reduce(
+        (estimate, row) => {
+          const size = estimateChatRowSize(row)
+          estimate.sizes.push(size)
+          estimate.total += size
+          return estimate
+        },
+        { sizes: [] as number[], total: 0 },
+      ),
+    [rows],
+  )
+  const estimateRowSize = useCallback(
+    (index: number) => estimatedRows.sizes[index] ?? 54,
+    [estimatedRows],
+  )
+  const getRowKey = useCallback((index: number) => rows[index]?.id ?? index, [rows])
   const activeMatch = searchMatches[activeMatchIndex] ?? null
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: (index) => (rows[index]?.kind === 'date' ? 34 : 54),
-    getItemKey: (index) => rows[index]?.id ?? index,
-    initialOffset: () => rows.length * 54,
-    overscan: 12,
+    estimateSize: estimateRowSize,
+    getItemKey: getRowKey,
+    initialOffset: () => estimatedRows.total,
+    overscan: 18,
   })
   const scrollToLatest = useCallback(() => {
     if (!rows.length) return
@@ -485,6 +503,44 @@ function buildRows(messages: MemoryMessage[]): ChatRow[] {
   }
 
   return rows
+}
+
+function estimateChatRowSize(row: ChatRow | undefined): number {
+  if (!row) return 54
+  if (row.kind === 'date') return 34
+
+  const message = row.message
+  if (message.type === 'system') {
+    return clamp(36 + estimateLineCount(message.text, 58) * 16, 42, 118)
+  }
+
+  if (message.type === 'call') return 58
+  if (message.type === 'document') return 82
+  if (message.type === 'audio') return 128
+  if (message.type === 'image' || message.type === 'video') return 214
+  if (message.type === 'sticker') return 196
+
+  return clamp(18 + estimateLineCount(message.text, 34) * 21, 38, 280)
+}
+
+function estimateLineCount(text: string, averageCharsPerLine: number): number {
+  let totalLines = 0
+  let currentLineLength = 0
+
+  for (const character of text) {
+    if (character === '\n') {
+      totalLines += Math.max(1, Math.ceil(currentLineLength / averageCharsPerLine))
+      currentLineLength = 0
+    } else {
+      currentLineLength += 1
+    }
+  }
+
+  return totalLines + Math.max(1, Math.ceil(currentLineLength / averageCharsPerLine))
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
 }
 
 function currentVisibleDateLabel(startIndex: number, rows: ChatRow[]): string {
