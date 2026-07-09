@@ -28,6 +28,49 @@ test('extracts media references and classifies media messages', () => {
   assert.equal(messages[0]?.mediaRef, 'IMG-20240103-WA0001.jpg')
 })
 
+test('classifies WhatsApp omitted media rows as attachment placeholders', () => {
+  const messages = parseWhatsAppExportText(`03/01/24, 18:02 - Her: image omitted
+03/01/24, 18:03 - Her: video omitted
+03/01/24, 18:04 - Her: audio omitted
+03/01/24, 18:05 - Her: sticker omitted
+03/01/24, 18:06 - Her: cute caption image omitted
+03/01/24, 18:07 - Her: private.pdf document omitted
+03/01/24, 18:08 - Her: video note omitted
+03/01/24, 18:09 - Her: Contact card omitted`)
+
+  assert.equal(messages[0]?.type, 'image')
+  assert.equal(messages[1]?.type, 'video')
+  assert.equal(messages[2]?.type, 'audio')
+  assert.equal(messages[3]?.type, 'sticker')
+  assert.equal(messages[4]?.type, 'image')
+  assert.equal(messages[4]?.text, 'cute caption')
+  assert.equal(messages[5]?.type, 'document')
+  assert.equal(messages[5]?.text, 'Document attachment skipped for privacy.')
+  assert.equal(messages[6]?.type, 'video')
+  assert.equal(messages[6]?.text, '')
+  assert.equal(messages[7]?.type, 'document')
+  assert.equal(messages[7]?.text, 'Document attachment skipped for privacy.')
+
+  for (const message of messages.slice(0, 4)) {
+    assert.equal(message.mediaRef, null)
+    assert.equal(message.text, '')
+  }
+})
+
+test('cleans omitted media markers from multiline attachment rows', () => {
+  const messages = parseWhatsAppExportText(`03/01/24, 18:02 - Her: cute caption
+image omitted
+03/01/24, 18:03 - Her: private.pdf
+document omitted`)
+
+  assert.equal(messages[0]?.type, 'image')
+  assert.equal(messages[0]?.text, 'cute caption')
+  assert.equal(messages[0]?.mediaRef, null)
+  assert.equal(messages[1]?.type, 'document')
+  assert.equal(messages[1]?.text, 'Document attachment skipped for privacy.')
+  assert.equal(messages[1]?.mediaRef, null)
+})
+
 test('extracts iOS attached media filenames cleanly', () => {
   const messages = parseWhatsAppExportText(
     '03/01/24, 18:02 - Her: <attached: IMG-20240103-WA0001.jpg>',

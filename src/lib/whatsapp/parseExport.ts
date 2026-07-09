@@ -20,6 +20,11 @@ interface AttachmentRef {
   safePreview: boolean
 }
 
+interface OmittedMediaRef {
+  type: MessageType
+  caption: string
+}
+
 const prefixPatterns = [
   /^\[(?<date>\d{1,2}[/. -]\d{1,2}[/. -]\d{2,4}),\s*(?<time>\d{1,2}:\d{2}(?::\d{2})?\s?(?:am|pm|AM|PM)?)\]\s*(?<rest>.*)$/,
   /^(?<date>\d{1,2}[/. -]\d{1,2}[/. -]\d{2,4}),\s*(?<time>\d{1,2}:\d{2}(?::\d{2})?\s?(?:am|pm|AM|PM)?)\s-\s(?<rest>.*)$/,
@@ -58,10 +63,11 @@ export function parseWhatsAppExportText(
       const current = messages[messages.length - 1]
       if (current && line.trim()) {
         const editedState = extractEditedState(`${current.text}\n${line}`)
-        current.text = editedState.text
+        const nextType = classifyMessage(editedState.text, current.mediaRef, current.sender)
+        current.text = cleanMessageText(editedState.text)
         current.edited = current.edited || editedState.edited
-        if (current.type !== 'document') {
-          current.type = classifyMessage(current.text, current.mediaRef, current.sender)
+        if (!isAttachmentType(current.type)) {
+          current.type = nextType
         }
       }
       continue
@@ -218,6 +224,8 @@ function classifyMessage(
   if (normalized.includes('voice call') || normalized.includes('video call')) {
     return 'call'
   }
+  const omittedMedia = omittedMediaForBody(body)
+  if (omittedMedia) return omittedMedia.type
   if (mediaRef) return inferMediaType(mediaRef)
   if (attachment && !attachment.safePreview) return 'document'
 
@@ -225,6 +233,13 @@ function classifyMessage(
 }
 
 function cleanMessageText(body: string, attachment: AttachmentRef | null = null): string {
+  const omittedMedia = omittedMediaForBody(body)
+  if (omittedMedia) {
+    return omittedMedia.type === 'document'
+      ? 'Document attachment skipped for privacy.'
+      : omittedMedia.caption
+  }
+
   if (attachment && !attachment.safePreview) {
     return 'Document attachment skipped for privacy.'
   }
@@ -261,6 +276,29 @@ function isSystemNotice(normalizedBody: string): boolean {
 
 function isBlankSenderRow(text: string): boolean {
   return /^[^:]+:$/.test(text.trim())
+}
+
+function omittedMediaForBody(body: string): OmittedMediaRef | null {
+  const normalized = cleanFormattingMarks(body).replace(/\s+/g, ' ').trim()
+  const match = normalized.match(
+    /^(?<caption>.*?)(?<kind>image|gif|video|video note|audio|voice message|sticker|document|contact card) omitted$/i,
+  )
+
+  if (!match?.groups) return null
+
+  const kind = match.groups.kind.toLowerCase()
+  const caption = match.groups.caption.trim()
+  if (kind === 'image' || kind === 'gif') return { type: 'image', caption }
+  if (kind === 'video' || kind === 'video note') return { type: 'video', caption }
+  if (kind === 'audio' || kind === 'voice message') return { type: 'audio', caption }
+  if (kind === 'sticker') return { type: 'sticker', caption }
+  if (kind === 'document' || kind === 'contact card') return { type: 'document', caption: '' }
+
+  return null
+}
+
+function isAttachmentType(type: MessageType): boolean {
+  return ['image', 'video', 'audio', 'document', 'sticker'].includes(type)
 }
 
 function extensionFor(filename: string): string {
